@@ -1,0 +1,11 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.bd-cover-img {
+    max-height: 255px;
+    height: 255px;
+    width: fit-content;
+    max-width: 100%;
+}
