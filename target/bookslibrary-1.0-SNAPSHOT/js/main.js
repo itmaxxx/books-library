@@ -2,6 +2,54 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchAndFillBooks();
 });
 
+function editClick(e) {
+    const pid = findBookId(e);
+
+    const container = e.target.parentNode.parentNode.parentNode;
+
+    const title = container.querySelector("h5");
+    const author = container.querySelector("p");
+
+    // Edit mode if no saved text
+    if (typeof title.savedText == 'undefined') {
+        title.setAttribute("contenteditable", "true");
+        title.focus();
+        title.savedText = title.innerText;
+
+        author.setAttribute("contenteditable", "true");
+        author.savedText = title.innerText;
+
+        e.target.innerText = "Save";
+    } else {
+        title.removeAttribute("contenteditable");
+        author.removeAttribute("contenteditable");
+
+        e.target.innerText = "Edit";
+
+        if (title.savedText !== title.innerText || author.savedText !== author.innerText) {
+            fetch("books", {
+                method: "PUT",
+                body: JSON.stringify({id: pid, title: title.innerText, author: author.innerText}),
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8"
+                }
+            }).then(resp => resp.json()).then(json => {
+                alert(json.message);
+                if (json.error) {
+                    title.innerText = title.savedText;
+                    author.innerText = author.savedText;
+                }
+
+                delete title.savedText;
+                delete author.savedText;
+            });
+        } else {
+            delete title.savedText;
+            delete author.savedText;
+        }
+    }
+}
+
 function fetchAndFillBooks() {
     const container = document.getElementById("books-container");
 
@@ -32,6 +80,10 @@ function fillBooks(container, books) {
         }).then(() => {
             for (let btn of document.querySelectorAll(".delete-book")) {
                 btn.addEventListener("click", deleteClick);
+            }
+
+            for (let btn of document.querySelectorAll(".edit-book")) {
+                btn.addEventListener("click", editClick);
             }
         });
 }

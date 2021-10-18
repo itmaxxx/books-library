@@ -138,7 +138,7 @@ public class BookOrm {
     }
 
     public boolean deleteById(String id) {
-        if(connection == null) return false;
+        if (connection == null) return false;
 
         String query = "DELETE FROM " + PREFIX + "BOOKS WHERE id = ?";
 
@@ -149,6 +149,57 @@ public class BookOrm {
             return true;
         } catch (SQLException ex){
             System.err.println("deleteById: " + ex.getMessage() + " " + query );
+
+            return false;
+        }
+    }
+
+    public boolean updateBook(Book book) {
+        if (connection == null
+                || book == null
+                || book.getId() == null) {
+            return false;
+        }
+
+        if (!book.getId().matches("^[0-9A-F]+$")) {
+            System.err.println("updateBook: Id error " + book.getId());
+
+            return false;
+        }
+
+        String query = "UPDATE " + PREFIX + "BOOKS SET ";
+        boolean needComma = false;
+
+        if (book.getTitle() != null) {
+            query += " Title = '" +
+                    book.getTitle().replace("'", "''") + "'";
+            needComma = true;
+        }
+        if (book.getAuthor() != null) {
+            if (needComma) query += ", ";
+
+            query += " Author = '" + book.getAuthor().replace("'", "''") + "'";
+            needComma = true;
+        }
+        if (book.getCover() != null) {
+            if (needComma) query += ", ";
+
+            query += " Cover = '" + book.getCover().replace("'", "''") + "'";
+            needComma = true;
+        }
+
+        if (!needComma) {
+            return false;
+        }
+
+        query += " WHERE Id = '" + book.getId() + "'";
+
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(query);
+
+            return true;
+        } catch (SQLException ex) {
+            System.err.println("updateBook: " + ex.getMessage() + " " + query);
 
             return false;
         }

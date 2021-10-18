@@ -3,7 +3,8 @@ package com.itmax.bookslibrary.servlets;
 import com.itmax.bookslibrary.models.Book;
 import com.itmax.bookslibrary.utils.Db;
 import org.json.JSONArray;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -14,6 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -173,5 +176,45 @@ public class BookServlet extends HttpServlet {
         }
 
         return fileName;
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("application/json");
+
+        try {
+            InputStream reader = req.getInputStream();
+            StringBuilder sb = new StringBuilder();
+
+            int sym;
+
+            while ((sym = reader.read()) != -1) {
+                sb.append((char) sym);
+            }
+
+            String body = new String(
+                    sb.toString().getBytes(
+                            StandardCharsets.ISO_8859_1),
+                    StandardCharsets.UTF_8
+            );
+
+            if (body.contains("?")) {
+                resp.getWriter().print("{\"status\":-3}");
+
+                return;
+            }
+
+            JSONObject params = (JSONObject) new JSONParser().parse(body);
+
+            if (Db.getBookOrm().updateBook(new Book((String) params.get("id"), (String) params.get("author"), (String) params.get("title"), null))) {
+                resp.getWriter().print("{\"success\":true, \"message\": \"book updated\"}");
+            } else {
+                resp.getWriter().print("{\"error\":true, \"message\": \"failed to update book\"}");
+            }
+        } catch (Exception ex) {
+            System.err.println("GalleryServlet(PUT): " + ex.getMessage());
+
+            resp.getWriter().print("{\"error\":true, \"message\": \"failed to update book " + ex.getMessage() + "\"}");
+        }
     }
 }
