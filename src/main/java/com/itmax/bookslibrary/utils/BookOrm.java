@@ -154,6 +154,28 @@ public class BookOrm {
         }
     }
 
+    public Book getBookById(String id) {
+        if (connection == null) return null;
+
+        try (PreparedStatement prep = connection.prepareStatement("SELECT * FROM " + PREFIX + "BOOKS WHERE Id = ?")) {
+            prep.setString(1, id);
+            ResultSet res = prep.executeQuery();
+
+            if (res.next()) {
+                return new Book(
+                        res.getString("ID"),
+                        res.getString("TITLE"),
+                        res.getString("AUTHOR"),
+                        res.getString("COVER")
+                );
+            } else return null;
+        } catch (SQLException ex) {
+            System.err.println("getBookById: " + ex.getMessage());
+
+            return null;
+        }
+    }
+
     public boolean updateBook(Book book) {
         if (connection == null
                 || book == null

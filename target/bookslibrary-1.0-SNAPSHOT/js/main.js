@@ -85,7 +85,18 @@ function fillBooks(container, books) {
             for (let btn of document.querySelectorAll(".edit-book")) {
                 btn.addEventListener("click", editClick);
             }
+
+            for (let btn of document.querySelectorAll(".download-book")) {
+                btn.addEventListener("click", downloadClick);
+            }
         });
+}
+
+
+function downloadClick(e) {
+    const pid = findBookId(e);
+
+    window.location = "download/" + pid;
 }
 
 function deleteClick(e) {
